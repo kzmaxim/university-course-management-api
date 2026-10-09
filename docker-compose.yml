@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: university-courses-db
+    environment:
+      POSTGRES_DB: university_courses
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - university_pgdata:/var/lib/postgresql/data
+
+volumes:
+  university_pgdata:

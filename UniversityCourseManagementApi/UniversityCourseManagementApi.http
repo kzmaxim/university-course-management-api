@@ -1,0 +1,88 @@
+@UniversityCourseManagementApi_HostAddress = http://localhost:5278
+
+### Students
+GET {{UniversityCourseManagementApi_HostAddress}}/api/students
+Accept: application/json
+
+###
+GET {{UniversityCourseManagementApi_HostAddress}}/api/students/1
+Accept: application/json
+
+###
+POST {{UniversityCourseManagementApi_HostAddress}}/api/students
+Content-Type: application/json
+
+{
+  "firstName": "Nurlan",
+  "lastName": "Bekov",
+  "email": "nurlan.bekov@student.kz",
+  "birthDate": "2004-05-10"
+}
+
+###
+PUT {{UniversityCourseManagementApi_HostAddress}}/api/students/1
+Content-Type: application/json
+
+{
+  "firstName": "Alex",
+  "lastName": "Smith",
+  "email": "alex.smith@student.kz",
+  "birthDate": "2004-03-12"
+}
+
+###
+DELETE {{UniversityCourseManagementApi_HostAddress}}/api/students/3
+
+### Teachers
+GET {{UniversityCourseManagementApi_HostAddress}}/api/teachers
+Accept: application/json
+
+###
+POST {{UniversityCourseManagementApi_HostAddress}}/api/teachers
+Content-Type: application/json
+
+{
+  "firstName": "Olga",
+  "lastName": "Kim",
+  "email": "olga.kim@university.kz",
+  "department": "Computer Science"
+}
+
+### Courses
+GET {{UniversityCourseManagementApi_HostAddress}}/api/courses?search=web&minCredits=3
+Accept: application/json
+
+###
+POST {{UniversityCourseManagementApi_HostAddress}}/api/courses
+Content-Type: application/json
+
+{
+  "name": "Algorithms",
+  "description": "Core algorithms",
+  "credits": 4,
+  "teacherId": 1
+}
+
+### Enrollments
+GET {{UniversityCourseManagementApi_HostAddress}}/api/enrollments
+Accept: application/json
+
+###
+POST {{UniversityCourseManagementApi_HostAddress}}/api/enrollments
+Content-Type: application/json
+
+{
+  "studentId": 3,
+  "courseId": 2
+}
+
+###
+PUT {{UniversityCourseManagementApi_HostAddress}}/api/enrollments/2
+Content-Type: application/json
+
+{
+  "grade": 91.5
+}
+
+###
+DELETE {{UniversityCourseManagementApi_HostAddress}}/api/enrollments/2
