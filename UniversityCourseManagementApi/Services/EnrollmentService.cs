@@ -1,4 +1,5 @@
 using AutoMapper;
+using UniversityCourseManagementApi.Common;
 using UniversityCourseManagementApi.Common.Exceptions;
 using UniversityCourseManagementApi.DTO.Enrollments;
 using UniversityCourseManagementApi.Models;
@@ -13,24 +14,49 @@ public class EnrollmentService : IEnrollmentService
     private readonly ICourseRepository _courseRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<EnrollmentService> _logger;
+    private readonly ICurrentUserService _currentUser;
 
     public EnrollmentService(
         IEnrollmentRepository enrollmentRepository,
         IStudentRepository studentRepository,
         ICourseRepository courseRepository,
         IMapper mapper,
-        ILogger<EnrollmentService> logger)
+        ILogger<EnrollmentService> logger,
+        ICurrentUserService currentUser)
     {
         _enrollmentRepository = enrollmentRepository;
         _studentRepository = studentRepository;
         _courseRepository = courseRepository;
         _mapper = mapper;
         _logger = logger;
+        _currentUser = currentUser;
     }
 
     public async Task<IReadOnlyList<EnrollmentDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var enrollments = await _enrollmentRepository.GetAllAsync(cancellationToken);
+        IReadOnlyList<Enrollment> enrollments;
+
+        if (_currentUser.IsInRole(AppRoles.Admin))
+        {
+            enrollments = await _enrollmentRepository.GetAllAsync(cancellationToken);
+        }
+        else if (_currentUser.IsInRole(AppRoles.Teacher))
+        {
+            var teacherId = _currentUser.TeacherId
+                ?? throw new ForbiddenException("TEACHER_PROFILE_MISSING", "Teacher profile is not linked to the account");
+            enrollments = await _enrollmentRepository.GetAllForTeacherAsync(teacherId, cancellationToken);
+        }
+        else if (_currentUser.IsInRole(AppRoles.Student))
+        {
+            var studentId = _currentUser.StudentId
+                ?? throw new ForbiddenException("STUDENT_PROFILE_MISSING", "Student profile is not linked to the account");
+            enrollments = await _enrollmentRepository.GetAllForStudentAsync(studentId, cancellationToken);
+        }
+        else
+        {
+            throw new ForbiddenException("FORBIDDEN", "You do not have permission to view enrollments");
+        }
+
         return _mapper.Map<IReadOnlyList<EnrollmentDto>>(enrollments);
     }
 
@@ -43,6 +69,7 @@ public class EnrollmentService : IEnrollmentService
             throw new NotFoundException("ENROLLMENT_NOT_FOUND", "Enrollment not found");
         }
 
+        EnsureCanAccessEnrollment(enrollment, writeAccess: false);
         return _mapper.Map<EnrollmentDto>(enrollment);
     }
 
@@ -97,6 +124,8 @@ public class EnrollmentService : IEnrollmentService
             throw new NotFoundException("ENROLLMENT_NOT_FOUND", "Enrollment not found");
         }
 
+        EnsureCanAccessEnrollment(enrollment, writeAccess: true);
+
         enrollment.Grade = dto.Grade;
         _enrollmentRepository.Update(enrollment);
         await _enrollmentRepository.SaveChangesAsync(cancellationToken);
@@ -117,5 +146,47 @@ public class EnrollmentService : IEnrollmentService
         _enrollmentRepository.Delete(enrollment);
         await _enrollmentRepository.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("Enrollment deleted with id {EnrollmentId}", id);
+    }
+
+    private void EnsureCanAccessEnrollment(Enrollment enrollment, bool writeAccess)
+    {
+        if (_currentUser.IsInRole(AppRoles.Admin))
+        {
+            return;
+        }
+
+        if (_currentUser.IsInRole(AppRoles.Teacher))
+        {
+            var teacherId = _currentUser.TeacherId;
+            if (!teacherId.HasValue || enrollment.Course.TeacherId != teacherId.Value)
+            {
+                throw new ForbiddenException("COURSE_ACCESS_DENIED", "Teachers can access only their own courses");
+            }
+
+            if (writeAccess)
+            {
+                return;
+            }
+
+            return;
+        }
+
+        if (_currentUser.IsInRole(AppRoles.Student))
+        {
+            var studentId = _currentUser.StudentId;
+            if (!studentId.HasValue || enrollment.StudentId != studentId.Value)
+            {
+                throw new ForbiddenException("ENROLLMENT_ACCESS_DENIED", "Students can access only their own enrollments");
+            }
+
+            if (writeAccess)
+            {
+                throw new ForbiddenException("FORBIDDEN", "Students cannot change grades");
+            }
+
+            return;
+        }
+
+        throw new ForbiddenException("FORBIDDEN", "You do not have permission to access this enrollment");
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UniversityCourseManagementApi.Common;
 using UniversityCourseManagementApi.DTO.Enrollments;
@@ -6,6 +7,7 @@ using UniversityCourseManagementApi.Services;
 namespace UniversityCourseManagementApi.Controllers;
 
 [Route("api/enrollments")]
+[Authorize]
 public class EnrollmentsController : ApiControllerBase
 {
     private readonly IEnrollmentService _enrollmentService;
@@ -17,6 +19,7 @@ public class EnrollmentsController : ApiControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(ReturnResult<IReadOnlyList<EnrollmentDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         return OkResult(await _enrollmentService.GetAllAsync(cancellationToken));
@@ -24,6 +27,7 @@ public class EnrollmentsController : ApiControllerBase
 
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(ReturnResult<EnrollmentDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
     {
@@ -31,6 +35,7 @@ public class EnrollmentsController : ApiControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Admin)]
     [ProducesResponseType(typeof(ReturnResult<EnrollmentDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]
@@ -42,8 +47,9 @@ public class EnrollmentsController : ApiControllerBase
     }
 
     [HttpPut("{id:int}/grade")]
+    [Authorize(Roles = $"{AppRoles.Admin},{AppRoles.Teacher}")]
     [ProducesResponseType(typeof(ReturnResult<EnrollmentDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateGrade(int id, [FromBody] EnrollmentUpdateDto dto, CancellationToken cancellationToken)
     {
@@ -51,6 +57,7 @@ public class EnrollmentsController : ApiControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = AppRoles.Admin)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UniversityCourseManagementApi.Common;
 using UniversityCourseManagementApi.DTO.Teachers;
@@ -16,6 +17,7 @@ public class TeachersController : ApiControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ReturnResult<IReadOnlyList<TeacherDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
@@ -23,6 +25,7 @@ public class TeachersController : ApiControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ReturnResult<TeacherDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
@@ -31,9 +34,9 @@ public class TeachersController : ApiControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Admin)]
     [ProducesResponseType(typeof(ReturnResult<TeacherDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Create([FromBody] TeacherCreateDto dto, CancellationToken cancellationToken)
     {
         var teacher = await _teacherService.CreateAsync(dto, cancellationToken);
@@ -41,6 +44,7 @@ public class TeachersController : ApiControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = AppRoles.Admin)]
     [ProducesResponseType(typeof(ReturnResult<TeacherDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]
@@ -50,9 +54,9 @@ public class TeachersController : ApiControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = AppRoles.Admin)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         await _teacherService.DeleteAsync(id, cancellationToken);

@@ -24,6 +24,32 @@ public class EnrollmentRepository : IEnrollmentRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Enrollment>> GetAllForStudentAsync(
+        int studentId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Enrollments
+            .AsNoTracking()
+            .Include(enrollment => enrollment.Student)
+            .Include(enrollment => enrollment.Course)
+            .Where(enrollment => enrollment.StudentId == studentId)
+            .OrderBy(enrollment => enrollment.Id)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Enrollment>> GetAllForTeacherAsync(
+        int teacherId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Enrollments
+            .AsNoTracking()
+            .Include(enrollment => enrollment.Student)
+            .Include(enrollment => enrollment.Course)
+            .Where(enrollment => enrollment.Course.TeacherId == teacherId)
+            .OrderBy(enrollment => enrollment.Id)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Enrollment?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Enrollments

@@ -35,3 +35,19 @@ public sealed class BadRequestException : AppException
     {
     }
 }
+
+public sealed class ForbiddenException : AppException
+{
+    public ForbiddenException(string errorCode, string message)
+        : base(StatusCodes.Status403Forbidden, errorCode, message)
+    {
+    }
+}
+
+public sealed class UnauthorizedAppException : AppException
+{
+    public UnauthorizedAppException(string errorCode, string message)
+        : base(StatusCodes.Status401Unauthorized, errorCode, message)
+    {
+    }
+}

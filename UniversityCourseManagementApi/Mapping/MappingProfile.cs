@@ -37,6 +37,10 @@ public class MappingProfile : Profile
         CreateMap<Course, CourseDto>()
             .ForMember(dest => dest.TeacherName,
                 opt => opt.MapFrom(src => src.Teacher.FirstName + " " + src.Teacher.LastName));
+        CreateMap<Teacher, CourseTeacherV2Dto>();
+        CreateMap<Course, CourseV2Dto>()
+            .ForMember(dest => dest.Teacher, opt => opt.MapFrom(src => src.Teacher))
+            .ForMember(dest => dest.EnrolledStudentsCount, opt => opt.MapFrom(src => src.Enrollments.Count));
         CreateMap<CourseCreateDto, Course>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())

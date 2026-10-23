@@ -1,7 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
+using Asp.Versioning.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 using UniversityCourseManagementApi.Common;
+using UniversityCourseManagementApi.Configuration;
 using UniversityCourseManagementApi.Data;
+using UniversityCourseManagementApi.Extensions;
 using UniversityCourseManagementApi.Mapping;
 using UniversityCourseManagementApi.Middleware;
 using UniversityCourseManagementApi.Repositories.Implementations;
@@ -32,10 +35,13 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddApiVersioningSupport();
+builder.Services.AddSwaggerWithJwtAndVersions();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddApplicationSecurity(builder.Configuration);
 
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
@@ -56,10 +62,19 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "University Course Management API v1");
+    var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+    foreach (var description in provider.ApiVersionDescriptions)
+    {
+        options.SwaggerEndpoint(
+            $"/swagger/{description.GroupName}/swagger.json",
+            $"University Course Management API {description.GroupName}");
+    }
 });
 
 app.UseHttpsRedirection();
+app.UseCors(CorsSettings.PolicyName);
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
@@ -67,5 +82,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await dbContext.Database.MigrateAsync();
 }
+
+await IdentityDataSeeder.SeedAsync(app.Services);
 
 await app.RunAsync();

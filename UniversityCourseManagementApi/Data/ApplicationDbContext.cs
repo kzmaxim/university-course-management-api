@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using UniversityCourseManagementApi.Models;
 
 namespace UniversityCourseManagementApi.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
@@ -16,6 +17,8 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
         modelBuilder.Entity<Student>(entity =>
@@ -34,6 +37,19 @@ public class ApplicationDbContext : DbContext
             entity.ToTable("Teachers");
             entity.HasKey(teacher => teacher.Id);
             entity.HasIndex(teacher => teacher.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<ApplicationUser>(entity =>
+        {
+            entity.HasOne(user => user.Teacher)
+                .WithMany()
+                .HasForeignKey(user => user.TeacherId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(user => user.Student)
+                .WithMany()
+                .HasForeignKey(user => user.StudentId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         Seed(modelBuilder);

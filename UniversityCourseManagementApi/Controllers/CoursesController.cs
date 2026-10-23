@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UniversityCourseManagementApi.Common;
 using UniversityCourseManagementApi.DTO.Courses;
@@ -16,6 +17,7 @@ public class CoursesController : ApiControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ReturnResult<IReadOnlyList<CourseDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll([FromQuery] CourseFilterDto filter, CancellationToken cancellationToken)
     {
@@ -23,6 +25,7 @@ public class CoursesController : ApiControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(ReturnResult<CourseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
@@ -31,8 +34,11 @@ public class CoursesController : ApiControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Admin)]
     [ProducesResponseType(typeof(ReturnResult<CourseDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Create([FromBody] CourseCreateDto dto, CancellationToken cancellationToken)
     {
@@ -41,8 +47,11 @@ public class CoursesController : ApiControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = AppRoles.Admin)]
     [ProducesResponseType(typeof(ReturnResult<CourseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Update(int id, [FromBody] CourseUpdateDto dto, CancellationToken cancellationToken)
     {
@@ -50,7 +59,10 @@ public class CoursesController : ApiControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = AppRoles.Admin)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {

@@ -90,6 +90,26 @@ public class CourseService : ICourseService
         _logger.LogInformation("Course deleted with id {CourseId}", id);
     }
 
+    public async Task<IReadOnlyList<CourseV2Dto>> GetAllV2Async(
+        CourseFilterDto filter,
+        CancellationToken cancellationToken = default)
+    {
+        var courses = await _courseRepository.GetAllWithEnrollmentsAsync(filter, cancellationToken);
+        return _mapper.Map<IReadOnlyList<CourseV2Dto>>(courses);
+    }
+
+    public async Task<CourseV2Dto> GetByIdV2Async(int id, CancellationToken cancellationToken = default)
+    {
+        var course = await _courseRepository.GetByIdWithEnrollmentsAsync(id, cancellationToken);
+        if (course is null)
+        {
+            _logger.LogWarning("Attempt to get a non-existent course with id {CourseId}", id);
+            throw new NotFoundException("COURSE_NOT_FOUND", "Course not found");
+        }
+
+        return _mapper.Map<CourseV2Dto>(course);
+    }
+
     private async Task EnsureTeacherExistsAsync(int teacherId, CancellationToken cancellationToken)
     {
         if (!await _teacherRepository.ExistsAsync(teacherId, cancellationToken))

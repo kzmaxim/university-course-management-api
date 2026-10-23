@@ -1,0 +1,21 @@
+namespace UniversityCourseManagementApi.DTO.Courses;
+
+public class CourseV2Dto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public int Credits { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public CourseTeacherV2Dto Teacher { get; set; } = new();
+    public int EnrolledStudentsCount { get; set; }
+}
+
+public class CourseTeacherV2Dto
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Department { get; set; } = string.Empty;
+}

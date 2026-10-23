@@ -17,11 +17,42 @@ public class CourseRepository : ICourseRepository
 
     public async Task<IReadOnlyList<Course>> GetAllAsync(CourseFilterDto filter, CancellationToken cancellationToken = default)
     {
-        var query = _context.Courses
+        var query = ApplyFilter(_context.Courses
+            .AsNoTracking()
+            .Include(course => course.Teacher), filter);
+
+        return await query.OrderBy(course => course.Id).ToListAsync(cancellationToken);
+    }
+
+    public async Task<Course?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Courses
+            .Include(course => course.Teacher)
+            .FirstOrDefaultAsync(course => course.Id == id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Course>> GetAllWithEnrollmentsAsync(
+        CourseFilterDto filter,
+        CancellationToken cancellationToken = default)
+    {
+        var query = ApplyFilter(_context.Courses
             .AsNoTracking()
             .Include(course => course.Teacher)
-            .AsQueryable();
+            .Include(course => course.Enrollments), filter);
 
+        return await query.OrderBy(course => course.Id).ToListAsync(cancellationToken);
+    }
+
+    public async Task<Course?> GetByIdWithEnrollmentsAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Courses
+            .Include(course => course.Teacher)
+            .Include(course => course.Enrollments)
+            .FirstOrDefaultAsync(course => course.Id == id, cancellationToken);
+    }
+
+    private static IQueryable<Course> ApplyFilter(IQueryable<Course> query, CourseFilterDto filter)
+    {
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
             var search = filter.Search.Trim().ToLower();
@@ -43,14 +74,7 @@ public class CourseRepository : ICourseRepository
             query = query.Where(course => course.Credits <= filter.MaxCredits.Value);
         }
 
-        return await query.OrderBy(course => course.Id).ToListAsync(cancellationToken);
-    }
-
-    public async Task<Course?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Courses
-            .Include(course => course.Teacher)
-            .FirstOrDefaultAsync(course => course.Id == id, cancellationToken);
+        return query;
     }
 
     public Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
