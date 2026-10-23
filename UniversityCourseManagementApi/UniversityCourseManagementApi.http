@@ -77,7 +77,7 @@ Content-Type: application/json
 }
 
 ###
-PUT {{UniversityCourseManagementApi_HostAddress}}/api/enrollments/2
+PUT {{UniversityCourseManagementApi_HostAddress}}/api/enrollments/2/grade
 Content-Type: application/json
 
 {

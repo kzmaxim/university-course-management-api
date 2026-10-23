@@ -62,7 +62,7 @@ Swagger UI: [http://localhost:5278/swagger](http://localhost:5278/swagger)
 | GET | `/api/enrollments` | Список записей |
 | GET | `/api/enrollments/{id}` | Запись по ID |
 | POST | `/api/enrollments` | Записать студента на курс |
-| PUT | `/api/enrollments/{id}` | Изменить оценку |
+| PUT | `/api/enrollments/{id}/grade` | Изменить оценку студента |
 | DELETE | `/api/enrollments/{id}` | Снять студента с курса |
 
 ## Формат ответа
@@ -103,3 +103,24 @@ Swagger UI: [http://localhost:5278/swagger](http://localhost:5278/swagger)
 ## Dependency Injection
 
 `DbContext`, репозитории и сервисы зарегистрированы как **Scoped**: один экземпляр на HTTP-запрос, общий `DbContext` внутри запроса, без удержания соединения между запросами. AutoMapper регистрируется как Singleton.
+
+## Валидация
+
+DTO помечены атрибутами `Data Annotations` (`[Required]`, `[EmailAddress]`, `[MaxLength]`, `[Range]`). Ошибки модели возвращают `400 Bad Request` с `errorCode: VALIDATION_ERROR` и текстом из `InvalidModelStateResponseFactory` в `Program.cs`.
+
+## Логирование
+
+Используется встроенный `ILogger<T>`:
+
+| Уровень | Где | Что пишется |
+|---------|-----|-------------|
+| **Information** | `*Service` | создание, изменение и удаление сущностей; запись на курс; смена оценки |
+| **Warning** | `*Service` | запрос несуществующего объекта; нарушения бизнес-правил (дубликат записи, несуществующий студент/курс/преподаватель) |
+| **Warning** | `ExceptionHandlingMiddleware` | ожидаемые ошибки (`AppException`) |
+| **Error** | `ExceptionHandlingMiddleware` | непредвиденные исключения (полный stack trace только в лог, клиенту — `INTERNAL_SERVER_ERROR`) |
+
+Уровни по умолчанию задаются в `appsettings.json` (`Default: Information`). При защите смотрите вывод консоли при `dotnet run`.
+
+## Обработка ошибок
+
+`ExceptionHandlingMiddleware` перехватывает исключения и отдаёт клиенту `ReturnResult` без stack trace и SQL. Централизованная валидация модели настроена в `Program.cs`.

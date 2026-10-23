@@ -41,7 +41,7 @@ public class EnrollmentsController : ApiControllerBase
         return CreatedResult(nameof(GetById), new { id = enrollment.Id }, enrollment);
     }
 
-    [HttpPut("{id:int}")]
+    [HttpPut("{id:int}/grade")]
     [ProducesResponseType(typeof(ReturnResult<EnrollmentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ReturnResult<object>), StatusCodes.Status404NotFound)]

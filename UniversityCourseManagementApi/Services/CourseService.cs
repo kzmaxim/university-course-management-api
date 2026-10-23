@@ -94,6 +94,9 @@ public class CourseService : ICourseService
     {
         if (!await _teacherRepository.ExistsAsync(teacherId, cancellationToken))
         {
+            _logger.LogWarning(
+                "Course references non-existent teacher {TeacherId}",
+                teacherId);
             throw new NotFoundException("TEACHER_NOT_FOUND", "Course cannot reference a non-existent teacher");
         }
     }

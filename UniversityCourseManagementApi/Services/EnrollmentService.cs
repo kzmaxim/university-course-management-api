@@ -50,16 +50,26 @@ public class EnrollmentService : IEnrollmentService
     {
         if (!await _studentRepository.ExistsAsync(dto.StudentId, cancellationToken))
         {
+            _logger.LogWarning(
+                "Cannot enroll: student {StudentId} does not exist",
+                dto.StudentId);
             throw new NotFoundException("STUDENT_NOT_FOUND", "Cannot enroll a non-existent student");
         }
 
         if (!await _courseRepository.ExistsAsync(dto.CourseId, cancellationToken))
         {
+            _logger.LogWarning(
+                "Cannot enroll: course {CourseId} does not exist",
+                dto.CourseId);
             throw new NotFoundException("COURSE_NOT_FOUND", "Cannot enroll a student on a non-existent course");
         }
 
         if (await _enrollmentRepository.ExistsForStudentAndCourseAsync(dto.StudentId, dto.CourseId, cancellationToken))
         {
+            _logger.LogWarning(
+                "Duplicate enrollment: student {StudentId} is already enrolled in course {CourseId}",
+                dto.StudentId,
+                dto.CourseId);
             throw new ConflictException("ENROLLMENT_ALREADY_EXISTS", "The student is already enrolled in this course");
         }
 
