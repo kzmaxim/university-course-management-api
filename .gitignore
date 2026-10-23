@@ -4,3 +4,7 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 idea/
+
+# Local secrets (JWT signing key, overrides)
+**/appsettings.Development.json
+**/appsettings.Local.json

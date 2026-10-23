@@ -1,0 +1,30 @@
+@model UniversityCourseManagementClient.Models.CourseListItem
+@{
+    ViewData["Title"] = Model?.Name ?? "Course details";
+}
+
+<h1 class="mb-3">Course details</h1>
+
+@if (!string.IsNullOrWhiteSpace(ViewBag.Error as string))
+{
+    <div class="alert alert-danger" role="alert">@ViewBag.Error</div>
+}
+else if (Model is not null)
+{
+    <dl class="row">
+        <dt class="col-sm-3">Id</dt>
+        <dd class="col-sm-9">@Model.Id</dd>
+        <dt class="col-sm-3">Name</dt>
+        <dd class="col-sm-9">@Model.Name</dd>
+        <dt class="col-sm-3">Description</dt>
+        <dd class="col-sm-9">@(Model.Description ?? "—")</dd>
+        <dt class="col-sm-3">Credits</dt>
+        <dd class="col-sm-9">@Model.Credits</dd>
+        <dt class="col-sm-3">Teacher</dt>
+        <dd class="col-sm-9">@Model.TeacherName (id @Model.TeacherId)</dd>
+        <dt class="col-sm-3">Created</dt>
+        <dd class="col-sm-9">@Model.CreatedAt.ToString("u")</dd>
+    </dl>
+}
+
+<p><a asp-action="Index">Back to list</a></p>
