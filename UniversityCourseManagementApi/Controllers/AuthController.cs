@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,9 @@ using UniversityCourseManagementApi.Services;
 
 namespace UniversityCourseManagementApi.Controllers;
 
-[Route("api/auth")]
+[ApiVersion("1.0")]
+[ApiVersion("2.0")]
+[Route("api/v{version:apiVersion}/auth")]
 public class AuthController : ApiControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;

@@ -206,18 +206,35 @@ JWT в заголовке `Authorization: Bearer <token>`. Неверный ил
 
 ### Защита endpoints (кратко)
 
-- Публичное чтение: списки/детали курсов (`/api/courses`, `/api/v1/courses`, `/api/v2/courses`), преподаватели.
+- Публичное чтение: списки/детали курсов (`/api/v1/courses`, `/api/v2/courses` или `/api/courses` → v1), преподаватели.
 - Мутации студентов, преподавателей, курсов и записей — с JWT; большинство изменений — роль **Admin**.
 - Записи и оценки: фильтрация по роли; преподаватель меняет оценки только на своих курсах; студент видит только свои записи.
 
-### Версии API (курсы)
+### Версии API
 
-| Version | GET list | GET by id | Контракт |
-|---------|----------|-----------|----------|
-| v1 | `/api/v1/courses` | `/api/v1/courses/{id}` | `CourseDto` (как в модуле 1) |
-| v2 | `/api/v2/courses` | `/api/v2/courses/{id}` | `CourseV2Dto` (преподаватель, число записанных) |
+Все ресурсы доступны в **v1** и **v2** с префиксом `/api/v{version}/`:
 
-CRUD на `/api/courses`: GET — anonymous; POST/PUT/DELETE — **Admin**.
+| Ресурс | v1 / v2 (пример) |
+|--------|------------------|
+| Auth | `/api/v1/auth/login`, `/api/v2/auth/me` |
+| Students | `/api/v1/students`, `/api/v2/students/{id}` |
+| Teachers | `/api/v1/teachers` |
+| Courses | `/api/v1/courses`, `/api/v2/courses/{id}` |
+| Enrollments | `/api/v1/enrollments` |
+| Admin | `/api/v1/admin/users/roles` |
+
+Для **студентов, преподавателей, записей и auth** контракт v1 и v2 совпадает (те же DTO и поведение). Различие v2 задано для **получения курсов**:
+
+| Version | GET courses | Контракт |
+|---------|-------------|----------|
+| v1 | `/api/v1/courses`, `/api/v1/courses/{id}` | `CourseDto` (как в модуле 1) |
+| v2 | `/api/v2/courses`, `/api/v2/courses/{id}` | `CourseV2Dto` (преподаватель подробнее, число записанных) |
+
+POST/PUT/DELETE курсов одинаковы в v1 и v2 (ответ — `CourseDto`), только **Admin**.
+
+**Совместимость модуля 1:** запросы без версии в URL (`/api/students`, `/api/courses`, …) middleware переписывает в `/api/v1/...`.
+
+OpenAPI/Swagger — отдельные документы **v1** и **v2** для всех контроллеров.
 
 ### CORS
 
@@ -228,6 +245,7 @@ CRUD на `/api/courses`: GET — anonymous; POST/PUT/DELETE — **Admin**.
 ```
 HTTP Request
   → ExceptionHandlingMiddleware
+  → LegacyApiVersionRewriteMiddleware (/api/... → /api/v1/...)
   → CORS
   → Authentication (JWT Bearer → ClaimsPrincipal)
   → Authorization ([Authorize] / роли / 401|403 handler)

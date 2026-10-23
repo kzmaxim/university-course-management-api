@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,9 @@ using UniversityCourseManagementApi.Models;
 
 namespace UniversityCourseManagementApi.Controllers;
 
-[Route("api/admin/users")]
+[ApiVersion("1.0")]
+[ApiVersion("2.0")]
+[Route("api/v{version:apiVersion}/admin/users")]
 [Authorize(Roles = AppRoles.Admin)]
 public class AdminUsersController : ApiControllerBase
 {

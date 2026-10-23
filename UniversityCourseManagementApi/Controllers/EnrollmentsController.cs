@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UniversityCourseManagementApi.Common;
@@ -6,7 +7,9 @@ using UniversityCourseManagementApi.Services;
 
 namespace UniversityCourseManagementApi.Controllers;
 
-[Route("api/enrollments")]
+[ApiVersion("1.0")]
+[ApiVersion("2.0")]
+[Route("api/v{version:apiVersion}/enrollments")]
 [Authorize]
 public class EnrollmentsController : ApiControllerBase
 {

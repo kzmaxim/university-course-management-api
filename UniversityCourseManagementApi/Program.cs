@@ -58,6 +58,7 @@ builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<LegacyApiVersionRewriteMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI(options =>

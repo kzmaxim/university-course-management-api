@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UniversityCourseManagementApi.Common;
@@ -7,7 +8,9 @@ using UniversityCourseManagementApi.Services;
 
 namespace UniversityCourseManagementApi.Controllers;
 
-[Route("api/students")]
+[ApiVersion("1.0")]
+[ApiVersion("2.0")]
+[Route("api/v{version:apiVersion}/students")]
 public class StudentsController : ApiControllerBase
 {
     private readonly IStudentService _studentService;
